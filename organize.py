@@ -7,6 +7,7 @@ from pathlib import Path
 from pathlib import PurePath
 
 
+# pretty size
 def size_fmt(num, suffix='b'):
 	for note in ['','k','m','g','t','p','e','z']:
 		if abs(num) < 1024.0:
@@ -15,23 +16,24 @@ def size_fmt(num, suffix='b'):
 	return '%.1f%s%s' % (num, 'y', suffix)
 
 
-# return a dict of all files in location provided
+# return a dict of all files in location
 def  get_files_dict(dir):
 	the_files = os.scandir(dir)
 	return the_files
 
-
+# slashes for underlines
 def fix_dir_name(string):
 	new_string = string.replace('/', '_')
 	return new_string
 
 
+# slashes for none
 def rm_forward_slash(string):
 	new_string = string.replace('/', '')
 	return new_string
 
 
-# make directory according by type, then moves like types in cwd there
+# make directory via; regex chomp 
 def makedir_for_mv(dir_name, entry):
 
 	regex = r'^(.*/)?(?:$|(.+?)(?:(\.[^.]*$)|$))'
@@ -47,7 +49,7 @@ def makedir_for_mv(dir_name, entry):
 	else:
 		os.mkdir(new_dir)
 
-
+# move list of like files to dir
 def move_files(files_to_move, where):
 
 	regex = r'^(.*/)?(?:$|(.+?)(?:(\.[^.]*$)|$))'
