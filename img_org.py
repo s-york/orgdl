@@ -4,6 +4,15 @@ from wand.image import Image
 from wand.display import display
 from magic import *
 import re
+import os
+
+# pretty size
+def size_fmt(num, suffix='b'):
+    for note in ['','k','m','g','t','p','e','z']:
+        if abs(num) < 1024.0:
+            return '%3.1f%s%s' % (num, note, suffix)
+        num /= 1024.0
+    return '%.1f%s%s' % (num, 'y', suffix)
 
 
 # get img size
@@ -40,16 +49,36 @@ def ret_img_size(fname):
             return
         return width, height
 
+
 # If get_img_size fails
-def alt_get_img_size(fname):
+#def alt_get_img_size(fname):
 
 
-# scan build dirt by size "icons, pics, images, photos"
+def get_img_size_in_bytes(img_file):
+    statinfo = os.stat(img_file)
+    s = size_fmt(statinfo.st_size)
+    return s
+
 def ret_img_dict(path):
 
+    dict_of_imgs = {}
+
+    for paths, dirnames, fnames in os.walk(path, topdown=True):
+
+        img_w, img_h = ret_img_size(fnames)
+        img_b_size = get_img_size_in_bytes(fnames)
+
+        dict_of_imgs.append(
+            {'path_to_file': paths, 'dirs': dirnames,
+            'filenames': fnames, 'pic_widths':img_w,
+            'pic_heights': img_h, 'pic_sizes':img_b_size})
+
+    return dict_of_imgs
 
 # make dirs for images 
+
 def build_img_dir_tree(dict_of_imgs):
+    
 
 
 # returns True or false
@@ -61,3 +90,5 @@ def img_rounder(img):
 
 # main 
 def img_org():
+
+# scan build dirt by size "icons, pics, images, photos"
