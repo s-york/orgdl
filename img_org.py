@@ -48,5 +48,16 @@ def alt_get_img_size(fname):
 def ret_img_dict(path):
 
 
+# make dirs for images 
+def build_img_dir_tree(dict_of_imgs):
+
+
 # returns True or false
 def is_img_sq_or_rect(full_path_img):
+
+
+# scale image to nearest size
+def img_rounder(img):
+
+# main 
+def img_org():
