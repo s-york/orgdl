@@ -94,14 +94,15 @@ def find_others(type, p, location):
 # <------------------main----------------->
 
 def main():
-	if sys.argv[1] == None:
-		print('Usage: python organize.py location\n')
-		print('e.g. : $ python organize.py $HOME')
-		print('e.g. : $ python organize.py .')
-		print('e.g. : $ python organize.py /mnt/backup/download')
-		quit()
-	else:
-		location = sys.argv[1]
+	if __name__ == '__main__':
+		if (sys.argv != 1):
+			print('Usage: python organize.py location\n')
+			print('e.g. : $ python organize.py $HOME')
+			print('e.g. : $ python organize.py .')
+			print('e.g. : $ python organize.py /mnt/backup/download')
+			quit()
+		else:
+			location = sys.argv[1]
 
 	found = get_files_dict(location)
 
