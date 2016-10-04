@@ -3,17 +3,9 @@ import sys
 import os
 import re
 import shutil
+import img_org
 from pathlib import Path
 from pathlib import PurePath
-
-
-# pretty size
-def size_fmt(num, suffix='b'):
-	for note in ['','k','m','g','t','p','e','z']:
-		if abs(num) < 1024.0:
-			return '%3.1f%s%s' % (num, note, suffix)
-		num /= 1024.0
-	return '%.1f%s%s' % (num, 'y', suffix)
 
 
 # return a dict of all files in location
@@ -74,7 +66,6 @@ def move_files(files_to_move, where):
 
 	print('Done.')
 
-
 # find others like types of provided type and return list of them
 def find_others(type, p, location):
 
@@ -92,12 +83,12 @@ def find_others(type, p, location):
 
 	return other_likes
 
-
 # <------------------main----------------->
 
 def main():
 	if __name__ == '__main__':
-		if (sys.argv != 1):
+		print('Location:',sys.argv[1])
+		if (sys.argv[1] == None):
 			print('Usage: python organize.py location\n')
 			print('e.g. : $ python organize.py $HOME')
 			print('e.g. : $ python organize.py .')
@@ -109,6 +100,8 @@ def main():
 	found = get_files_dict(location)
 
 	p = Path(location)
+
+	image_directories = []
 
 	for entry in p.iterdir():
 
@@ -122,13 +115,24 @@ def main():
 
 				dir_name = fix_dir_name(file_type)
 
+				if(dir_name == 'image_png' or
+					dir_name == 'image_jpeg' or
+					dir_name == 'image_gif'):
+					image_directories.append(os.getcwd()+'/'+location+'/'+dir_name)
+
 				makedir_for_mv(dir_name, str(magick))
 
 				to_move = find_others(file_type, p, location)
 
 				move_files(to_move, dir_name)
+				
 		except FileNotFoundError:
 			continue
+
+
+	for img_dir in image_directories:
+		dic = img_org.ret_img_dict(img_dir)
+		img_org.build_img_dir_tree_n_move(dic)
 	
 main()
 

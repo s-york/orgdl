@@ -1,22 +1,27 @@
-import struct
-import imghdr
 from wand.image import Image
 from wand.display import display
-from magic import *
-import re
+import struct
+import imghdr
+import shutil
 import os
 
 # pretty size
 def size_fmt(num, suffix='b'):
-    for note in ['','k','m','g','t','p','e','z']:
+    for note in ['','K','M','G','T','P','E','Z']:
         if abs(num) < 1024.0:
-            return '%3.1f%s%s' % (num, note, suffix)
+            return '{:.1f}{}{}'.format(float(num), note, suffix)
         num /= 1024.0
-    return '%.1f%s%s' % (num, 'y', suffix)
+    return '{:.1f}{}{}'.format(float(num), 'y', suffix)
 
 
-# get img size
-def ret_img_size(fname):	
+# return image width and height
+def ret_img_size(fname):
+    with Image(filename=fname) as img:
+        return str(img.size[0]), str(img.size[1]) 
+
+
+# get img width and height when no wand
+def ret_img_size_nowand(fname):	
     with open(fname, 'rb') as fd:
         head = fd.read(24)
         if len(head) != 24:
@@ -49,46 +54,96 @@ def ret_img_size(fname):
             return
         return width, height
 
-
-# If get_img_size fails
-#def alt_get_img_size(fname):
-
-
-def get_img_size_in_bytes(img_file):
-    statinfo = os.stat(img_file)
-    s = size_fmt(statinfo.st_size)
-    return s
-
+# return dict of images
 def ret_img_dict(path):
 
-    dict_of_imgs = {}
+    dict_of_imgs = []
 
-    for paths, dirnames, fnames in os.walk(path, topdown=True):
+    for fd in os.scandir(path):
+        if fd.name.startswith('.') or fd.is_dir() or fd.is_symlink():
+            pass
+        else:
+            d = fd.path.replace(fd.name,'')
+            img_w, img_h = ret_img_size(fd.path)
+            img_b_size = fd.stat().st_size
 
-        img_w, img_h = ret_img_size(fnames)
-        img_b_size = get_img_size_in_bytes(fnames)
-
-        dict_of_imgs.append(
-            {'path_to_file': paths, 'dirs': dirnames,
-            'filenames': fnames, 'pic_widths':img_w,
-            'pic_heights': img_h, 'pic_sizes':img_b_size})
+            dict_of_imgs.append(
+                {'directory': d,
+                 'full_path': fd.path,
+                 'width': img_w,
+                 'height': img_h,
+                 'size': img_b_size, 
+                 'file_name': fd.name}
+                )
 
     return dict_of_imgs
 
-# make dirs for images 
-
-def build_img_dir_tree(dict_of_imgs):
+# build directory tree and move images into the 
+# new dst
+def build_img_dir_tree_n_move(dict_of_imgs):
     
+    for x in dict_of_imgs:
+
+        if(int(x['width']) == int(x['height']) and int(x['width']) <= 512):
+
+            dir_x = '{}icons_{}x{}'.format(
+                x['directory'], str(x['width']), str(x['height']))
+
+            # make directory if it doesnt
+            if(os.path.exists(dir_x)):
+                pass
+            else:
+                os.mkdir(dir_x)
+
+            src_image = '{}'.format(x['full_path'])
+            dst_image = '{}/{}'.format(dir_x, x['file_name'])
+
+            # move file to new location
+            shutil.move(src_image, dst_image)
+            print('moved {} {}.'.format(x['full_path'], size_fmt(x['size'])))
 
 
-# returns True or false
-def is_img_sq_or_rect(full_path_img):
+        elif(int(x['width']) != int(x['height']) and int(x['width']) < 1920):
+
+            dir_x = '{}images_{}x{}'.format(
+                x['directory'], str(x['width']), str(x['height']))
+
+            # make directory if it doesnt
+            if(os.path.exists(dir_x)):
+                pass
+            else:
+                os.mkdir(dir_x)
+
+            src_image = '{}'.format(x['full_path'])
+            dst_image = '{}/{}'.format(dir_x, x['file_name'])
+
+            # move file to new dst
+            shutil.move(src_image, dst_image)
+            print('moved {} {}.'.format(x['full_path'], size_fmt(x['size'])))
+
+        elif(int(x['width']) >= 1920):
+
+            dir_x = '{}wallpapers_{}x{}'.format(
+                x['directory'], str(x['width']), str(x['height']))
+
+            # make directory if it doesnt
+            if(os.path.exists(dir_x)):
+                pass
+            else:
+                os.mkdir(dir_x)
+
+            src_image = '{}'.format(x['full_path'])
+            dst_image = '{}/{}'.format(dir_x, x['file_name'])
+
+            # move file to new dst
+            shutil.move(src_image, dst_image)
+            print('moved {} {}.'.format(x['full_path'], size_fmt(x['size'])))
+
+        else:
+            print('File error, this doesn\'t seem to be a image.')
+            pass
 
 
-# scale image to nearest size
-def img_rounder(img):
 
-# main 
-def img_org():
 
-# scan build dirt by size "icons, pics, images, photos"
+
